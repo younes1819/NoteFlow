@@ -1,0 +1,14 @@
+---
+description: NoteFlow minimalist UI styling rules
+globs: "**/*.{css,tsx}"
+alwaysApply: false
+---
+
+# Styling
+
+- Palette: `#FFFFFF` background, `#000000` text/borders, red/orange accent for active states.
+- `border: 1px solid #000`; `border-radius: 0` on buttons and cards.
+- Sidebar + main two-column layout; feed grouped by date headers.
+- Card header: solid black bar, white uppercase type label, timestamp right-aligned.
+- No Tailwind/shadcn unless already adopted in the repo.
+- Prefer CSS variables in `src/styles/tokens.css` for colors and spacing.

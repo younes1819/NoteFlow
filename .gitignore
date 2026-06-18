@@ -1,6 +1,10 @@
 # Dependencies
 node_modules/
 
+# Expo
+.expo/
+expo-env.d.ts
+
 # Build output
 dist/
 build/
@@ -9,6 +13,7 @@ out/
 
 # Environment
 .env
+.env.local
 .env.*
 !.env.example
 
@@ -26,3 +31,6 @@ npm-debug.log*
 
 # Test & coverage
 coverage/
+
+# Local tooling
+_gluestack-src/

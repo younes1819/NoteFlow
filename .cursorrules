@@ -1,0 +1,109 @@
+# NoteFlow — Cursor AI Rules
+
+You are building **NoteFlow**, a minimalist daily productivity web app. Read `docs/idea.md` for product scope.
+
+## Product constraints (never violate)
+
+- **One stream:** All content lives in "The Universal Flow" — chronological, no folder hierarchy.
+- **Three entry types only:** `note`, `task`, `link`. Do not add calendars, tags-as-folders, rich docs, or other types in v1.
+- **Capture first:** UI must minimize friction (+ NOTE, + TASK, + LINK).
+- **Filters are views, not storage:** ALL / NOTES / TASKS / LINKS filter the same data; never split into separate stores per type.
+- **v1 is local-only:** Persist with `localStorage`. No auth, backend, or cloud sync unless explicitly requested.
+
+## Tech stack
+
+| Layer | Choice |
+|-------|--------|
+| Framework | React 18+ (functional components, hooks) |
+| Language | TypeScript (`strict: true`) |
+| Build | Vite |
+| Styling | Plain CSS / CSS modules (no Tailwind unless already in repo) |
+| State | React context + hooks, or Zustand if global state grows |
+| Persistence | `localStorage` adapter in `src/lib/storage/` |
+| Tests | Vitest + React Testing Library (when tests are requested) |
+
+> NoteFlow v1 targets **web** (sidebar + main layout, `localStorage`, external links). Do not use React Native primitives (`View`, `Text`, `StyleSheet`) unless the stack changes.
+
+## Planned folder structure
+
+```
+src/
+  components/     # Shared UI (Sidebar, EntryCard, FlowFeed…)
+  features/       # Feature slices (capture, filters, stats)
+  hooks/          # Reusable hooks (useEntries, useFilter…)
+  lib/            # Pure utils (groupByDate, validateUrl, storage)
+  store/          # Global state (if not colocated in features)
+  types/          # Entry, NoteEntry, TaskEntry, LinkEntry
+  styles/         # Global tokens, reset
+```
+
+- **Feature-first** for new code; avoid a flat `components/` dump of unrelated files.
+- **Colocate** tests as `*.test.ts(x)` next to the file under test.
+
+## Domain model
+
+```typescript
+type EntryType = 'note' | 'task' | 'link';
+
+interface BaseEntry {
+  id: string;
+  type: EntryType;
+  createdAt: string; // ISO 8601
+}
+
+// note → { body: string }
+// task → { title: string; items: { id: string; text: string; done: boolean }[] }
+// link → { title: string; url: string }
+```
+
+- IDs: `crypto.randomUUID()` or equivalent.
+- Sort entries **newest first** within each date group.
+- Stats: `entries.length`, tasks done = items where `done === true`.
+
+## TypeScript rules
+
+- No `any`. Use `unknown` at boundaries and narrow with type guards or Zod if parsing external JSON.
+- Explicit prop interfaces for every component.
+- Prefer `interface` for object shapes; use discriminated unions on `type` for entry variants.
+- Enable `noUncheckedIndexedAccess` when configuring `tsconfig`.
+
+## React patterns
+
+- Functional components only; extract logic into custom hooks when a component exceeds ~80 lines.
+- Prefer composition over prop drilling; context for entries + filter state.
+- Memoize list items (`React.memo`) only when profiling shows need — feed is the hot path.
+- No class components, no default exports for components (use named exports).
+
+## UI / design system
+
+Match the wireframe: **monochrome brutalist** aesthetic.
+
+- Colors: white `#FFFFFF`, black `#000000`, accent red/orange for active filter + progress bar.
+- Borders: `1px solid #000`, **no border-radius** on buttons/cards.
+- Typography: uppercase labels (NOTEFLOW, THE UNIVERSAL FLOW, STATS, ADD); monospace or clean sans.
+- Layout: fixed left sidebar + scrollable main feed.
+- Entry cards: black header bar with type label (NOTE / TASK / LINK) + time on the right.
+- Do not introduce gradients, shadows, rounded cards, or heavy animation libraries.
+
+## Code style
+
+- **Minimize diff scope** — only change what the task requires.
+- Match existing naming: `camelCase` functions/vars, `PascalCase` components, `kebab-case` file names for non-components.
+- Self-explanatory code; comments only for non-obvious business rules.
+- No premature abstractions (no wrapper hooks for one-liners).
+
+## What to avoid
+
+- Redux, MobX, or heavy state libraries for v1.
+- Next.js / SSR — this is a client-side Vite SPA.
+- Adding npm dependencies without clear need.
+- Creating markdown/docs files unless asked.
+- Contradicting decisions in `docs/idea.md` or `docs/project-management.md`.
+
+## References
+
+- Product: `docs/idea.md`
+- Kanban / features: `docs/project-management.md`
+- AI setup: `docs/ai-setup.md`
+
+When unsure about scope, prefer the simplest implementation that satisfies v1 in `docs/idea.md`.

@@ -1,0 +1,23 @@
+---
+description: React and TypeScript conventions for NoteFlow
+globs: "**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# React + TypeScript
+
+- Functional components with explicit prop interfaces; named exports.
+- Strict TypeScript: no `any`; discriminated unions for entry types (`note` | `task` | `link`).
+- Feature-first layout under `src/features/`; shared UI in `src/components/`.
+- Hooks for data access (`useEntries`, `useStats`); keep components presentational where possible.
+- Web React only (DOM elements, CSS) — not React Native primitives.
+- Minimize scope: no new dependencies or patterns unless the task requires them.
+
+```typescript
+// Entry variant pattern
+type Entry = NoteEntry | TaskEntry | LinkEntry;
+
+function isTaskEntry(e: Entry): e is TaskEntry {
+  return e.type === 'task';
+}
+```

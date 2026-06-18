@@ -1,0 +1,13 @@
+---
+description: Core NoteFlow product and architecture constraints
+alwaysApply: true
+---
+
+# NoteFlow core
+
+- Single chronological stream ("The Universal Flow"); no folder hierarchy.
+- Three entry types only: `note`, `task`, `link`.
+- Filters (ALL/NOTES/TASKS/LINKS) are views over one store, not separate data silos.
+- v1: client-side `localStorage` only — no backend unless explicitly requested.
+- UI: monochrome, 1px black borders, no border-radius, uppercase section labels.
+- Read `docs/idea.md` before adding features outside v1 scope.
