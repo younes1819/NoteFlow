@@ -93,6 +93,20 @@ export async function login(
   return handleResponse(res);
 }
 
+export async function syncFirebaseSession(
+  idToken: string
+): Promise<{ token: string }> {
+  const res = await fetch(`${BASE_URL}/auth/firebase`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ idToken }),
+  });
+  const data = await handleResponse<{ token: string }>(res);
+  const { setToken } = await import('@/lib/authStorage');
+  await setToken(data.token);
+  return data;
+}
+
 export async function getNotes(): Promise<AnyNote[]> {
   const headers = await getAuthHeaders();
   const res = await fetch(`${BASE_URL}/notes`, { headers });

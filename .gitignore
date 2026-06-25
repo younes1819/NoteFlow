@@ -34,3 +34,7 @@ coverage/
 
 # Local tooling
 _gluestack-src/
+
+# Firebase (descargar desde console.firebase.google.com)
+google-services.json
+GoogleService-Info.plist

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -15,6 +15,8 @@ import { Text } from '@/components/ui/text';
 import { useTheme } from '@/constants/theme';
 import { login, register } from '@/lib/api';
 import { setToken } from '@/lib/authStorage';
+import { isFirebaseNative } from '@/lib/firebase/platform';
+import { useAuthStore } from '@/store/authStore';
 import { useNotesStore } from '@/store/notesStore';
 
 export default function AuthScreen() {
@@ -22,20 +24,37 @@ export default function AuthScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const fetchNotes = useNotesStore((s) => s.fetchNotes);
+  const firebaseLogin = useAuthStore((s) => s.login);
+  const firebaseRegister = useAuthStore((s) => s.register);
+  const firebaseLoading = useAuthStore((s) => s.loading);
 
   const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const isBusy = loading || firebaseLoading;
+
   const handleSubmit = async () => {
     setError(null);
     setLoading(true);
     try {
-      const fn = mode === 'login' ? login : register;
-      const { token } = await fn(email.trim(), password);
-      await setToken(token);
+      if (isFirebaseNative) {
+        if (mode === 'register') {
+          if (!name.trim()) {
+            throw new Error('El nombre es obligatorio');
+          }
+          await firebaseRegister(email.trim(), password, name.trim());
+        } else {
+          await firebaseLogin(email.trim(), password);
+        }
+      } else {
+        const fn = mode === 'login' ? login : register;
+        const { token } = await fn(email.trim(), password);
+        await setToken(token);
+      }
       await fetchNotes();
       router.replace('/(tabs)/notas');
     } catch (err) {
@@ -63,6 +82,17 @@ export default function AuthScreen() {
           {mode === 'login' ? 'Inicia sesión' : 'Crea tu cuenta'}
         </Text>
 
+        {mode === 'register' ? (
+          <TextInput
+            value={name}
+            onChangeText={setName}
+            placeholder="Nombre"
+            placeholderTextColor={theme.colors.muted}
+            autoCapitalize="words"
+            style={[inputStyle(theme)]}
+          />
+        ) : null}
+
         <TextInput
           value={email}
           onChangeText={setEmail}
@@ -70,7 +100,7 @@ export default function AuthScreen() {
           placeholderTextColor={theme.colors.muted}
           autoCapitalize="none"
           keyboardType="email-address"
-          style={[inputStyle(theme)]}
+          style={[inputStyle(theme), mode === 'register' ? { marginTop: 12 } : undefined]}
         />
         <TextInput
           value={password}
@@ -87,10 +117,10 @@ export default function AuthScreen() {
 
         <Pressable
           onPress={handleSubmit}
-          disabled={loading}
+          disabled={isBusy}
           style={[styles.button, { borderColor: theme.colors.border }]}
         >
-          {loading ? (
+          {isBusy ? (
             <ActivityIndicator color={theme.colors.foreground} />
           ) : (
             <Text style={{ color: theme.colors.foreground, fontWeight: '700' }}>

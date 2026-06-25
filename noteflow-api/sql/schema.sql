@@ -2,7 +2,8 @@
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email VARCHAR(255) UNIQUE NOT NULL,
-  password_hash VARCHAR(255) NOT NULL,
+  password_hash VARCHAR(255),
+  firebase_uid VARCHAR(128) UNIQUE,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -33,6 +34,7 @@ CREATE TABLE note_tags (
 );
 
 CREATE INDEX idx_notes_user_id ON notes(user_id);
+CREATE INDEX idx_users_firebase_uid ON users(firebase_uid);
 CREATE INDEX idx_notes_created_at ON notes(created_at DESC);
 CREATE INDEX idx_checklist_items_note_id ON checklist_items(note_id);
 CREATE INDEX idx_note_tags_note_id ON note_tags(note_id);
