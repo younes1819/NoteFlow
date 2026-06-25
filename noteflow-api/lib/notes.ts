@@ -8,6 +8,9 @@ export interface DbNote {
   archived: boolean;
   created_at: string;
   updated_at: string;
+  latitude: string | null;
+  longitude: string | null;
+  location_name: string | null;
 }
 
 export interface DbChecklistItem {
@@ -31,8 +34,17 @@ export interface ApiNote {
   archived: boolean;
   createdAt: string;
   updatedAt: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  locationName?: string | null;
   items?: { id: string; text: string; isCompleted: boolean }[];
   tags?: string[];
+}
+
+function parseCoordinate(value: string | null): number | null {
+  if (value === null || value === undefined) return null;
+  const num = Number(value);
+  return Number.isFinite(num) ? num : null;
 }
 
 export function mapNoteRow(row: DbNoteWithRelations): ApiNote {
@@ -43,6 +55,9 @@ export function mapNoteRow(row: DbNoteWithRelations): ApiNote {
     archived: row.archived,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    latitude: parseCoordinate(row.latitude),
+    longitude: parseCoordinate(row.longitude),
+    locationName: row.location_name,
   };
 
   if (row.content) base.content = row.content;

@@ -2,8 +2,15 @@ import { create } from 'zustand';
 
 import * as api from '@/lib/api';
 import { hapticSuccess } from '@/lib/haptics';
+import { cancelReminder } from '@/lib/notifications';
 import type { ChecklistNote, IdeaNote, Note } from '@/types';
 import { isChecklistNote, isIdeaNote, isTextNote } from '@/lib/typeGuards';
+
+export interface AddNoteOptions {
+  latitude?: number;
+  longitude?: number;
+  locationName?: string;
+}
 
 interface NotesStore {
   notes: Note[];
@@ -13,12 +20,26 @@ interface NotesStore {
   error: string | null;
   isReady: boolean;
   fetchNotes: () => Promise<void>;
-  addNote: (title: string, content: string) => Promise<void>;
-  addChecklist: (title: string, itemTexts: string[]) => Promise<void>;
-  addIdea: (title: string, tags: string[], color: string) => Promise<void>;
+  addNote: (
+    title: string,
+    content: string,
+    options?: AddNoteOptions
+  ) => Promise<Note | undefined>;
+  addChecklist: (
+    title: string,
+    itemTexts: string[],
+    options?: AddNoteOptions
+  ) => Promise<void>;
+  addIdea: (
+    title: string,
+    tags: string[],
+    color: string,
+    options?: AddNoteOptions
+  ) => Promise<void>;
   deleteNote: (id: string) => Promise<void>;
   deleteChecklist: (id: string) => Promise<void>;
   deleteIdea: (id: string) => Promise<void>;
+  deleteChecklistItem: (checklistId: string, itemId: string) => Promise<void>;
   archiveNote: (id: string) => Promise<void>;
   archiveChecklist: (id: string) => Promise<void>;
   archiveIdea: (id: string) => Promise<void>;
@@ -63,35 +84,50 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     }
   },
 
-  addNote: async (title, content) => {
-    const created = await api.createNote({ title, type: 'note', content });
-    if (!isTextNote(created)) return;
+  addNote: async (title, content, options) => {
+    const created = await api.createNote({
+      title,
+      type: 'note',
+      content,
+      ...options,
+    });
+    if (!isTextNote(created)) return undefined;
     set((state) => ({ notes: [created, ...state.notes] }));
+    return created;
   },
 
-  addChecklist: async (title, itemTexts) => {
+  addChecklist: async (title, itemTexts, options) => {
     const created = await api.createNote({
       title,
       type: 'checklist',
       items: itemTexts.map((text) => ({ text })),
+      ...options,
     });
     if (!isChecklistNote(created)) return;
     set((state) => ({ checklists: [created, ...state.checklists] }));
   },
 
-  addIdea: async (title, tags, color) => {
-    const created = await api.createNote({ title, type: 'idea', tags, color });
+  addIdea: async (title, tags, color, options) => {
+    const created = await api.createNote({
+      title,
+      type: 'idea',
+      tags,
+      color,
+      ...options,
+    });
     if (!isIdeaNote(created)) return;
     set((state) => ({ ideas: [created, ...state.ideas] }));
   },
 
   deleteNote: async (id) => {
     await api.deleteNote(id);
+    await cancelReminder(id);
     set((state) => ({ notes: state.notes.filter((n) => n.id !== id) }));
   },
 
   deleteChecklist: async (id) => {
     await api.deleteNote(id);
+    await cancelReminder(id);
     set((state) => ({
       checklists: state.checklists.filter((c) => c.id !== id),
     }));
@@ -99,7 +135,23 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
 
   deleteIdea: async (id) => {
     await api.deleteNote(id);
+    await cancelReminder(id);
     set((state) => ({ ideas: state.ideas.filter((i) => i.id !== id) }));
+  },
+
+  deleteChecklistItem: async (checklistId, itemId) => {
+    await api.deleteChecklistItem(itemId);
+    set((state) => ({
+      checklists: state.checklists.map((c) =>
+        c.id !== checklistId
+          ? c
+          : {
+              ...c,
+              items: c.items.filter((i) => i.id !== itemId),
+              updatedAt: new Date(),
+            }
+      ),
+    }));
   },
 
   archiveNote: async (id) => {

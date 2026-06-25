@@ -5,12 +5,14 @@ import { ActivityIndicator, View } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
 import { HydrationGate } from '@/components/ui/HydrationGate';
 import { getColorMode, noteflowTheme } from '@/constants/theme';
 import { isFirebaseNative } from '@/lib/firebase/platform';
+import { initNotifications } from '@/lib/notifications';
 import { useAuthStore } from '@/store/authStore';
 
 function AuthGate({ children }: { children: ReactNode }) {
@@ -25,6 +27,10 @@ function AuthGate({ children }: { children: ReactNode }) {
     if (!isFirebaseNative) return;
     return init();
   }, [init]);
+
+  useEffect(() => {
+    void initNotifications();
+  }, []);
 
   useEffect(() => {
     if (!isFirebaseNative || initializing) return;
@@ -63,32 +69,34 @@ export default function RootLayout() {
   const mode = getColorMode(useColorScheme());
 
   return (
-    <SafeAreaProvider>
-      <GluestackUIProvider mode={mode}>
-        <HydrationGate>
-          <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
-          <AuthGate>
-            <Stack
-              screenOptions={{
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: noteflowTheme[mode].colors.background,
-                },
-              }}
-            >
-              <Stack.Screen name="(tabs)" />
-              <Stack.Screen name="auth" options={{ headerShown: false }} />
-              <Stack.Screen
-                name="nueva-nota"
-                options={{
-                  presentation: 'modal',
-                  animation: 'slide_from_bottom',
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <GluestackUIProvider mode={mode}>
+          <HydrationGate>
+            <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
+            <AuthGate>
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                  contentStyle: {
+                    backgroundColor: noteflowTheme[mode].colors.background,
+                  },
                 }}
-              />
-            </Stack>
-          </AuthGate>
-        </HydrationGate>
-      </GluestackUIProvider>
-    </SafeAreaProvider>
+              >
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="auth" options={{ headerShown: false }} />
+                <Stack.Screen
+                  name="nueva-nota"
+                  options={{
+                    presentation: 'modal',
+                    animation: 'slide_from_bottom',
+                  }}
+                />
+              </Stack>
+            </AuthGate>
+          </HydrationGate>
+        </GluestackUIProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }

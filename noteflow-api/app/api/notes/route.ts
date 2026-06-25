@@ -12,6 +12,9 @@ const noteSchema = z.object({
   color: z.string().optional(),
   items: z.array(z.object({ text: z.string().min(1) })).optional(),
   tags: z.array(z.string()).optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  locationName: z.string().optional(),
 });
 
 const NOTES_WITH_RELATIONS = `
@@ -50,12 +53,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ errors: result.error.issues }, { status: 400 });
     }
 
-    const { title, type, content, color, items, tags } = result.data;
+    const { title, type, content, color, items, tags, latitude, longitude, locationName } =
+      result.data;
 
     const [note] = await query<{ id: string }>(
-      `INSERT INTO notes (user_id, title, type, content, color)
-       VALUES ($1, $2, $3, $4, $5) RETURNING id`,
-      [user.userId, title, type, content ?? null, color ?? null]
+      `INSERT INTO notes (user_id, title, type, content, color, latitude, longitude, location_name)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
+      [
+        user.userId,
+        title,
+        type,
+        content ?? null,
+        color ?? null,
+        latitude ?? null,
+        longitude ?? null,
+        locationName ?? null,
+      ]
     );
 
     if (!note) {

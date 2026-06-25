@@ -9,12 +9,14 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { SearchHeader } from '@/components/ui/SearchHeader';
 import { useTheme } from '@/constants/theme';
 import { useNotesStore } from '@/store/notesStore';
+import { hapticDelete } from '@/lib/haptics';
 
 export default function NotasScreen() {
   const theme = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const notes = useNotesStore((s) => s.notes);
+  const deleteNote = useNotesStore((s) => s.deleteNote);
   const [query, setQuery] = useState('');
 
   const data = useMemo(() => {
@@ -53,6 +55,9 @@ export default function NotasScreen() {
               note={item}
               index={index}
               onPress={() => router.push(`/(tabs)/notas/${item.id}`)}
+              onDelete={() => {
+                void hapticDelete().then(() => deleteNote(item.id));
+              }}
             />
           )}
         />

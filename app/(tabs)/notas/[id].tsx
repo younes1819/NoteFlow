@@ -86,6 +86,11 @@ export default function NotaDetailScreen() {
       <Text style={[styles.body, { color: theme.colors.foreground }]}>
         {note.content}
       </Text>
+      {note.locationName ? (
+        <Text style={[styles.location, { color: theme.colors.muted }]}>
+          📍 {note.locationName}
+        </Text>
+      ) : null}
     </ScrollView>
   );
 }
@@ -109,4 +114,5 @@ const styles = StyleSheet.create({
   date: { fontSize: 12, marginBottom: 8 },
   title: { fontSize: 24, fontWeight: '700', marginBottom: 16 },
   body: { fontSize: 16, lineHeight: 24 },
+  location: { fontSize: 13, marginTop: 16, letterSpacing: 0.3 },
 });

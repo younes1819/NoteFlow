@@ -1,38 +1,52 @@
 import { ReactNode } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
-import Animated, { FadeInDown, FadeOutLeft } from 'react-native-reanimated';
+import { Pressable, StyleSheet } from 'react-native';
+import Animated, { FadeInDown, FadeOut } from 'react-native-reanimated';
 
-import { Text } from '@/components/ui/text';
+import { SwipeableRow } from '@/components/gestures/SwipeableRow';
 import { useTheme } from '@/constants/theme';
 
 interface AnimatedCardProps {
   children: ReactNode;
   onPress?: () => void;
+  onDelete?: () => void;
   index?: number;
 }
 
-export function AnimatedCard({ children, onPress, index = 0 }: AnimatedCardProps) {
+export function AnimatedCard({
+  children,
+  onPress,
+  onDelete,
+  index = 0,
+}: AnimatedCardProps) {
   const theme = useTheme();
+
+  const card = (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.card,
+        {
+          borderColor: theme.colors.border,
+          backgroundColor: theme.colors.surface,
+          opacity: pressed ? 0.85 : 1,
+        },
+      ]}
+    >
+      {children}
+    </Pressable>
+  );
 
   return (
     <Animated.View
       entering={FadeInDown.delay(index * 40).springify()}
-      exiting={FadeOutLeft.springify()}
+      exiting={FadeOut.springify()}
       style={styles.wrapper}
     >
-      <Pressable
-        onPress={onPress}
-        style={({ pressed }) => [
-          styles.card,
-          {
-            borderColor: theme.colors.border,
-            backgroundColor: theme.colors.surface,
-            opacity: pressed ? 0.85 : 1,
-          },
-        ]}
-      >
-        {children}
-      </Pressable>
+      {onDelete ? (
+        <SwipeableRow onDelete={onDelete}>{card}</SwipeableRow>
+      ) : (
+        card
+      )}
     </Animated.View>
   );
 }

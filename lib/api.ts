@@ -10,6 +10,9 @@ export interface CreateNoteInput {
   color?: string;
   items?: { text: string }[];
   tags?: string[];
+  latitude?: number;
+  longitude?: number;
+  locationName?: string;
 }
 
 interface ApiNoteResponse {
@@ -21,6 +24,9 @@ interface ApiNoteResponse {
   archived: boolean;
   createdAt: string;
   updatedAt: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  locationName?: string | null;
   items?: { id: string; text: string; isCompleted: boolean }[];
   tags?: string[];
 }
@@ -36,6 +42,9 @@ function mapApiNote(raw: ApiNoteResponse): AnyNote {
     createdAt: toDate(raw.createdAt),
     updatedAt: toDate(raw.updatedAt),
     archived: raw.archived,
+    latitude: raw.latitude ?? null,
+    longitude: raw.longitude ?? null,
+    locationName: raw.locationName ?? null,
   };
 
   if (raw.type === 'note') {
@@ -147,6 +156,15 @@ export async function updateNote(
 export async function deleteNote(id: string): Promise<void> {
   const headers = await getAuthHeaders();
   const res = await fetch(`${BASE_URL}/notes/${id}`, {
+    method: 'DELETE',
+    headers,
+  });
+  await handleResponse<void>(res);
+}
+
+export async function deleteChecklistItem(itemId: string): Promise<void> {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${BASE_URL}/checklist-items/${itemId}`, {
     method: 'DELETE',
     headers,
   });

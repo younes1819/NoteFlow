@@ -10,13 +10,14 @@ interface NoteCardProps {
   note: Note;
   index?: number;
   onPress: () => void;
+  onDelete?: () => void;
 }
 
-export function NoteCard({ note, index, onPress }: NoteCardProps) {
+export function NoteCard({ note, index, onPress, onDelete }: NoteCardProps) {
   const theme = useTheme();
 
   return (
-    <AnimatedCard index={index} onPress={onPress}>
+    <AnimatedCard index={index} onPress={onPress} onDelete={onDelete}>
       <View style={[styles.header, { backgroundColor: theme.colors.cardHeader }]}>
         <Text style={[styles.badge, { color: theme.colors.cardHeaderText }]}>
           NOTA
@@ -31,6 +32,11 @@ export function NoteCard({ note, index, onPress }: NoteCardProps) {
       <Text style={[styles.preview, { color: theme.colors.muted }]}>
         {truncate(note.content)}
       </Text>
+      {note.locationName ? (
+        <Text style={[styles.location, { color: theme.colors.muted }]}>
+          📍 {note.locationName}
+        </Text>
+      ) : null}
     </AnimatedCard>
   );
 }
@@ -62,5 +68,10 @@ const styles = StyleSheet.create({
   preview: {
     fontSize: 13,
     lineHeight: 18,
+  },
+  location: {
+    fontSize: 11,
+    marginTop: 8,
+    letterSpacing: 0.3,
   },
 });

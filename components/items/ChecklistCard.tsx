@@ -10,16 +10,22 @@ interface ChecklistCardProps {
   checklist: ChecklistNote;
   index?: number;
   onPress: () => void;
+  onDelete?: () => void;
 }
 
-export function ChecklistCard({ checklist, index, onPress }: ChecklistCardProps) {
+export function ChecklistCard({
+  checklist,
+  index,
+  onPress,
+  onDelete,
+}: ChecklistCardProps) {
   const theme = useTheme();
   const completed = checklist.items.filter((i) => i.isCompleted).length;
   const total = checklist.items.length;
   const progress = total > 0 ? completed / total : 0;
 
   return (
-    <AnimatedCard index={index} onPress={onPress}>
+    <AnimatedCard index={index} onPress={onPress} onDelete={onDelete}>
       <View style={[styles.header, { backgroundColor: theme.colors.cardHeader }]}>
         <Text style={[styles.badge, { color: theme.colors.cardHeaderText }]}>
           TAREA

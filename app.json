@@ -9,7 +9,11 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "NoteFlow usa tu ubicación para asociarla a las notas que captures.",
+        "UIBackgroundModes": ["remote-notification"]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -19,11 +23,31 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "googleServicesFile": "./google-services.json",
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "POST_NOTIFICATIONS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-router", "@react-native-firebase/app"]
+    "plugins": [
+      "expo-router",
+      "@react-native-firebase/app",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "NoteFlow usa tu ubicación para asociarla a las notas que captures."
+        }
+      ]
+    ]
   }
 }

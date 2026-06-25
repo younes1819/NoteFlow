@@ -16,6 +16,9 @@ CREATE TABLE notes (
   type VARCHAR(50) NOT NULL CHECK (type IN ('note', 'checklist', 'idea')),
   color VARCHAR(7),
   archived BOOLEAN DEFAULT FALSE,
+  latitude NUMERIC,
+  longitude NUMERIC,
+  location_name VARCHAR(255),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

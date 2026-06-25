@@ -10,6 +10,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/ui/text';
+import { SwipeableRow } from '@/components/gestures/SwipeableRow';
 import { useTheme } from '@/constants/theme';
 import { formatDate } from '@/lib/format';
 import { hapticDelete } from '@/lib/haptics';
@@ -24,6 +25,7 @@ export default function ChecklistDetailScreen() {
   const deleteChecklist = useNotesStore((s) => s.deleteChecklist);
   const archiveChecklist = useNotesStore((s) => s.archiveChecklist);
   const toggleChecklistItem = useNotesStore((s) => s.toggleChecklistItem);
+  const deleteChecklistItem = useNotesStore((s) => s.deleteChecklistItem);
 
   if (!checklist) {
     return (
@@ -85,29 +87,45 @@ export default function ChecklistDetailScreen() {
         {checklist.title}
       </Text>
       {checklist.items.map((item) => (
-        <Pressable
-          key={item.id}
-          onPress={() => void toggleChecklistItem(checklist.id, item.id)}
-          style={[styles.itemRow, { borderColor: theme.colors.border }]}
-        >
-          <Ionicons
-            name={item.isCompleted ? 'checkbox' : 'square-outline'}
-            size={22}
-            color={item.isCompleted ? theme.colors.accent : theme.colors.foreground}
-          />
-          <Text
-            style={[
-              styles.itemText,
-              {
-                color: theme.colors.foreground,
-                textDecorationLine: item.isCompleted ? 'line-through' : 'none',
-                opacity: item.isCompleted ? 0.6 : 1,
-              },
-            ]}
+        <View key={item.id} style={styles.itemWrapper}>
+          <SwipeableRow
+            onDelete={() => {
+              void hapticDelete().then(() =>
+                deleteChecklistItem(checklist.id, item.id)
+              );
+            }}
+            deleteLabel="QUITAR"
           >
-            {item.text}
-          </Text>
-        </Pressable>
+            <Pressable
+              onPress={() => void toggleChecklistItem(checklist.id, item.id)}
+              style={[
+                styles.itemRow,
+                {
+                  borderColor: theme.colors.border,
+                  backgroundColor: theme.colors.surface,
+                },
+              ]}
+            >
+            <Ionicons
+              name={item.isCompleted ? 'checkbox' : 'square-outline'}
+              size={22}
+              color={item.isCompleted ? theme.colors.accent : theme.colors.foreground}
+            />
+            <Text
+              style={[
+                styles.itemText,
+                {
+                  color: theme.colors.foreground,
+                  textDecorationLine: item.isCompleted ? 'line-through' : 'none',
+                  opacity: item.isCompleted ? 0.6 : 1,
+                },
+              ]}
+            >
+              {item.text}
+            </Text>
+          </Pressable>
+        </SwipeableRow>
+        </View>
       ))}
     </ScrollView>
   );
@@ -131,13 +149,13 @@ const styles = StyleSheet.create({
   },
   date: { fontSize: 12, marginBottom: 8 },
   title: { fontSize: 24, fontWeight: '700', marginBottom: 16 },
+  itemWrapper: { marginBottom: 8 },
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     borderWidth: 1,
     padding: 12,
-    marginBottom: 8,
   },
   itemText: { flex: 1, fontSize: 15 },
 });

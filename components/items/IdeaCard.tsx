@@ -10,13 +10,14 @@ interface IdeaCardProps {
   idea: IdeaNote;
   index?: number;
   onPress: () => void;
+  onDelete?: () => void;
 }
 
-export function IdeaCard({ idea, index, onPress }: IdeaCardProps) {
+export function IdeaCard({ idea, index, onPress, onDelete }: IdeaCardProps) {
   const theme = useTheme();
 
   return (
-    <AnimatedCard index={index} onPress={onPress}>
+    <AnimatedCard index={index} onPress={onPress} onDelete={onDelete}>
       <View
         style={[
           styles.colorBand,

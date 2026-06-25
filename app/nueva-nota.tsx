@@ -1,5 +1,6 @@
 import { ReactNode, useState } from 'react';
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -15,6 +16,8 @@ import { Text } from '@/components/ui/text';
 import { IDEA_COLORS } from '@/constants/ideaColors';
 import { useTheme } from '@/constants/theme';
 import { hapticSuccess } from '@/lib/haptics';
+import { getCurrentAddress, type NoteLocation } from '@/lib/location';
+import { scheduleReminder } from '@/lib/notifications';
 import {
   checklistSchema,
   ideaSchema,
@@ -22,6 +25,34 @@ import {
 } from '@/lib/validation';
 import { useNotesStore } from '@/store/notesStore';
 import type { NoteKind } from '@/types';
+
+type ReminderPreset = 'none' | '1h' | 'tomorrow' | '3d';
+
+const REMINDER_OPTIONS: { id: ReminderPreset; label: string }[] = [
+  { id: 'none', label: 'Sin recordatorio' },
+  { id: '1h', label: 'En 1 hora' },
+  { id: 'tomorrow', label: 'Mañana 9:00' },
+  { id: '3d', label: 'En 3 días' },
+];
+
+function getReminderDate(preset: ReminderPreset): Date | null {
+  if (preset === 'none') return null;
+
+  const now = new Date();
+  if (preset === '1h') {
+    return new Date(now.getTime() + 60 * 60 * 1000);
+  }
+  if (preset === 'tomorrow') {
+    const date = new Date(now);
+    date.setDate(date.getDate() + 1);
+    date.setHours(9, 0, 0, 0);
+    return date;
+  }
+  if (preset === '3d') {
+    return new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+  }
+  return null;
+}
 
 export default function NuevaNotaScreen() {
   const { type = 'note' } = useLocalSearchParams<{ type?: NoteKind }>();
@@ -38,11 +69,22 @@ export default function NuevaNotaScreen() {
   const [newItem, setNewItem] = useState('');
   const [tagsInput, setTagsInput] = useState('');
   const [color, setColor] = useState<string>(IDEA_COLORS[0]);
+  const [reminderPreset, setReminderPreset] = useState<ReminderPreset>('none');
+  const [location, setLocation] = useState<NoteLocation | null>(null);
+  const [locating, setLocating] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
   const screenTitle =
     type === 'checklist' ? 'Nueva lista' : type === 'idea' ? 'Nueva idea' : 'Nueva nota';
+
+  const locationPayload = location
+    ? {
+        latitude: location.latitude,
+        longitude: location.longitude,
+        locationName: location.locationName,
+      }
+    : undefined;
 
   const handleSave = async () => {
     setErrors({});
@@ -59,7 +101,15 @@ export default function NuevaNotaScreen() {
           setErrors(fieldErrors);
           return;
         }
-        await addNote(result.data.title, result.data.content);
+        const created = await addNote(
+          result.data.title,
+          result.data.content,
+          locationPayload
+        );
+        const reminderDate = getReminderDate(reminderPreset);
+        if (created && reminderDate) {
+          await scheduleReminder(created.id, created.title, reminderDate);
+        }
       } else if (type === 'checklist') {
         const parsedItems = items.map((i) => i.trim()).filter(Boolean);
         const result = checklistSchema.safeParse({ title, items: parsedItems });
@@ -72,7 +122,7 @@ export default function NuevaNotaScreen() {
           setErrors(fieldErrors);
           return;
         }
-        await addChecklist(result.data.title, result.data.items);
+        await addChecklist(result.data.title, result.data.items, locationPayload);
       } else {
         const tags = tagsInput
           .split(',')
@@ -88,7 +138,12 @@ export default function NuevaNotaScreen() {
           setErrors(fieldErrors);
           return;
         }
-        await addIdea(result.data.title, result.data.tags, result.data.color);
+        await addIdea(
+          result.data.title,
+          result.data.tags,
+          result.data.color,
+          locationPayload
+        );
       }
       await hapticSuccess();
       router.back();
@@ -104,6 +159,20 @@ export default function NuevaNotaScreen() {
     if (!value) return;
     setItems((prev) => [...prev, value]);
     setNewItem('');
+  };
+
+  const handleLocate = async () => {
+    setLocating(true);
+    try {
+      const address = await getCurrentAddress();
+      if (address) {
+        setLocation(address);
+      }
+    } catch {
+      setErrors({ location: 'No se pudo obtener la ubicación' });
+    } finally {
+      setLocating(false);
+    }
   };
 
   return (
@@ -218,6 +287,71 @@ export default function NuevaNotaScreen() {
             </Field>
           </>
         )}
+
+        {type === 'note' && Platform.OS !== 'web' ? (
+          <Field label="Recordatorio">
+            <View style={styles.reminderRow}>
+              {REMINDER_OPTIONS.map((option) => (
+                <Pressable
+                  key={option.id}
+                  onPress={() => setReminderPreset(option.id)}
+                  style={[
+                    styles.reminderChip,
+                    {
+                      borderColor: theme.colors.border,
+                      backgroundColor:
+                        reminderPreset === option.id
+                          ? theme.colors.foreground
+                          : theme.colors.surface,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={{
+                      color:
+                        reminderPreset === option.id
+                          ? theme.colors.background
+                          : theme.colors.foreground,
+                      fontSize: 11,
+                      fontWeight: '600',
+                    }}
+                  >
+                    {option.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </Field>
+        ) : null}
+
+        {Platform.OS !== 'web' ? (
+          <Field label="Ubicación" error={errors.location}>
+            <Pressable
+              onPress={() => void handleLocate()}
+              disabled={locating}
+              style={[styles.locateBtn, { borderColor: theme.colors.border }]}
+            >
+              {locating ? (
+                <ActivityIndicator color={theme.colors.foreground} />
+              ) : (
+                <Text style={{ color: theme.colors.foreground, fontWeight: '700' }}>
+                  {location ? 'ACTUALIZAR UBICACIÓN' : 'AÑADIR UBICACIÓN'}
+                </Text>
+              )}
+            </Pressable>
+            {location ? (
+              <Text style={{ color: theme.colors.muted, marginTop: 8, fontSize: 13 }}>
+                📍 {location.locationName}
+              </Text>
+            ) : null}
+          </Field>
+        ) : null}
+
+        {errors.form ? (
+          <Text style={[styles.error, { color: theme.colors.accent }]}>
+            {errors.form}
+          </Text>
+        ) : null}
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -284,4 +418,15 @@ const styles = StyleSheet.create({
   },
   colors: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   swatch: { width: 36, height: 36 },
+  reminderRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  reminderChip: {
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  locateBtn: {
+    borderWidth: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
 });
