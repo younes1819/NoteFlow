@@ -49,6 +49,11 @@ export function IdeaCard({ idea, index, onPress, onDelete }: IdeaCardProps) {
           ))}
         </View>
       )}
+      {idea.locationName ? (
+        <Text style={[styles.location, { color: theme.colors.muted }]}>
+          📍 {idea.locationName}
+        </Text>
+      ) : null}
     </AnimatedCard>
   );
 }
@@ -97,5 +102,10 @@ const styles = StyleSheet.create({
     fontSize: 11,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
+  },
+  location: {
+    fontSize: 11,
+    marginTop: 8,
+    letterSpacing: 0.3,
   },
 });

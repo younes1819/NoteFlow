@@ -7,6 +7,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/ui/text';
@@ -86,8 +87,17 @@ export default function ChecklistDetailScreen() {
       <Text style={[styles.title, { color: theme.colors.foreground }]}>
         {checklist.title}
       </Text>
-      {checklist.items.map((item) => (
-        <View key={item.id} style={styles.itemWrapper}>
+      {checklist.locationName ? (
+        <Text style={[styles.location, { color: theme.colors.muted }]}>
+          📍 {checklist.locationName}
+        </Text>
+      ) : null}
+      {checklist.items.map((item, index) => (
+        <Animated.View
+          key={item.id}
+          entering={FadeInDown.delay(index * 30).springify()}
+          style={styles.itemWrapper}
+        >
           <SwipeableRow
             onDelete={() => {
               void hapticDelete().then(() =>
@@ -125,7 +135,7 @@ export default function ChecklistDetailScreen() {
             </Text>
           </Pressable>
         </SwipeableRow>
-        </View>
+        </Animated.View>
       ))}
     </ScrollView>
   );
@@ -149,6 +159,7 @@ const styles = StyleSheet.create({
   },
   date: { fontSize: 12, marginBottom: 8 },
   title: { fontSize: 24, fontWeight: '700', marginBottom: 16 },
+  location: { fontSize: 13, marginBottom: 16, letterSpacing: 0.3 },
   itemWrapper: { marginBottom: 8 },
   itemRow: {
     flexDirection: 'row',

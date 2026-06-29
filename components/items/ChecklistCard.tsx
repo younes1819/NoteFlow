@@ -51,6 +51,11 @@ export function ChecklistCard({
           ]}
         />
       </View>
+      {checklist.locationName ? (
+        <Text style={[styles.location, { color: theme.colors.muted }]}>
+          📍 {checklist.locationName}
+        </Text>
+      ) : null}
     </AnimatedCard>
   );
 }
@@ -89,5 +94,10 @@ const styles = StyleSheet.create({
   },
   fill: {
     height: 4,
+  },
+  location: {
+    fontSize: 11,
+    marginTop: 8,
+    letterSpacing: 0.3,
   },
 });

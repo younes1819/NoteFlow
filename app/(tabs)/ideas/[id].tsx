@@ -101,6 +101,11 @@ export default function IdeaDetailScreen() {
           </View>
         ))}
       </View>
+      {idea.locationName ? (
+        <Text style={[styles.location, { color: theme.colors.muted }]}>
+          📍 {idea.locationName}
+        </Text>
+      ) : null}
     </ScrollView>
   );
 }
@@ -131,4 +136,5 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: '700', marginBottom: 16 },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { borderWidth: 1, paddingHorizontal: 10, paddingVertical: 4 },
+  location: { fontSize: 13, marginTop: 16, letterSpacing: 0.3 },
 });
