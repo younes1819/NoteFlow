@@ -60,7 +60,12 @@ export default function ChecklistDetailScreen() {
       ]}
     >
       <View style={styles.headerRow}>
-        <Pressable onPress={() => router.back()} style={styles.iconBtn}>
+        <Pressable
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel="Volver"
+          style={styles.iconBtn}
+        >
           <Ionicons name="arrow-back" size={22} color={theme.colors.foreground} />
         </Pressable>
         <View style={styles.actions}>
@@ -69,12 +74,16 @@ export default function ChecklistDetailScreen() {
               await archiveChecklist(checklist.id);
               router.back();
             }}
+            accessibilityRole="button"
+            accessibilityLabel="Archivar lista"
             style={[styles.actionBtn, { borderColor: theme.colors.border }]}
           >
             <Text style={{ color: theme.colors.foreground }}>Archivar</Text>
           </Pressable>
           <Pressable
             onPress={confirmDelete}
+            accessibilityRole="button"
+            accessibilityLabel="Eliminar lista"
             style={[styles.actionBtn, { borderColor: theme.colors.border }]}
           >
             <Text style={{ color: theme.colors.accent }}>Eliminar</Text>
@@ -108,6 +117,10 @@ export default function ChecklistDetailScreen() {
           >
             <Pressable
               onPress={() => void toggleChecklistItem(checklist.id, item.id)}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: item.isCompleted }}
+              accessibilityLabel={item.text}
+              accessibilityHint="Pulsa para marcar o desmarcar. Desliza a la izquierda para quitar."
               style={[
                 styles.itemRow,
                 {

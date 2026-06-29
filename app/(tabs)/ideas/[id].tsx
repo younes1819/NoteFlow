@@ -62,7 +62,12 @@ export default function IdeaDetailScreen() {
         ]}
       />
       <View style={styles.headerRow}>
-        <Pressable onPress={() => router.back()} style={styles.iconBtn}>
+        <Pressable
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel="Volver"
+          style={styles.iconBtn}
+        >
           <Ionicons name="arrow-back" size={22} color={theme.colors.foreground} />
         </Pressable>
         <View style={styles.actions}>
@@ -71,12 +76,16 @@ export default function IdeaDetailScreen() {
               await archiveIdea(idea.id);
               router.back();
             }}
+            accessibilityRole="button"
+            accessibilityLabel="Archivar idea"
             style={[styles.actionBtn, { borderColor: theme.colors.border }]}
           >
             <Text style={{ color: theme.colors.foreground }}>Archivar</Text>
           </Pressable>
           <Pressable
             onPress={confirmDelete}
+            accessibilityRole="button"
+            accessibilityLabel="Eliminar idea"
             style={[styles.actionBtn, { borderColor: theme.colors.border }]}
           >
             <Text style={{ color: theme.colors.accent }}>Eliminar</Text>

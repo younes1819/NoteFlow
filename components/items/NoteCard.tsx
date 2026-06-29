@@ -17,7 +17,12 @@ export function NoteCard({ note, index, onPress, onDelete }: NoteCardProps) {
   const theme = useTheme();
 
   return (
-    <AnimatedCard index={index} onPress={onPress} onDelete={onDelete}>
+    <AnimatedCard
+      index={index}
+      onPress={onPress}
+      onDelete={onDelete}
+      accessibilityLabel={`Nota: ${note.title}`}
+    >
       <View style={[styles.header, { backgroundColor: theme.colors.cardHeader }]}>
         <Text style={[styles.badge, { color: theme.colors.cardHeaderText }]}>
           NOTA

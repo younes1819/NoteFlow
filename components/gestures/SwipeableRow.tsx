@@ -50,6 +50,8 @@ export function SwipeableRow({
   return (
     <View style={styles.container}>
       <View
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
         style={[
           styles.deleteBackground,
           { backgroundColor: theme.colors.accent },

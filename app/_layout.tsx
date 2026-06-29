@@ -1,10 +1,9 @@
 import '@/global.css';
 
 import { useEffect, type ReactNode } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, useColorScheme, View } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 

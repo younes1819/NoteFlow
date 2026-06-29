@@ -17,11 +17,11 @@ export type FirebaseUser = FirebaseAuthTypes.User;
 export function onAuthStateChanged(
   callback: (user: FirebaseUser | null) => void
 ): () => void {
-  return getAuth().onAuthStateChanged(callback);
+  return getAuth()().onAuthStateChanged(callback);
 }
 
 export function getCurrentUser(): FirebaseUser | null {
-  return getAuth().currentUser;
+  return getAuth()().currentUser;
 }
 
 export async function getIdToken(): Promise<string | null> {
@@ -34,7 +34,7 @@ export async function signInWithEmail(
   email: string,
   password: string
 ): Promise<FirebaseUser> {
-  const credential = await getAuth().signInWithEmailAndPassword(email, password);
+  const credential = await getAuth()().signInWithEmailAndPassword(email, password);
   return credential.user;
 }
 
@@ -43,11 +43,14 @@ export async function registerWithEmail(
   password: string,
   name: string
 ): Promise<FirebaseUser> {
-  const credential = await getAuth().createUserWithEmailAndPassword(email, password);
+  const credential = await getAuth()().createUserWithEmailAndPassword(
+    email,
+    password
+  );
   await credential.user.updateProfile({ displayName: name });
   return credential.user;
 }
 
 export async function signOutFirebase(): Promise<void> {
-  await getAuth().signOut();
+  await getAuth()().signOut();
 }

@@ -48,7 +48,7 @@ export async function createUserProfile(
 }
 
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
-  const doc = await getFirestore().collection('users').doc(userId).get();
+  const doc = await getFirestore()().collection('users').doc(userId).get();
   if (!doc.exists) return null;
   return mapProfile(doc.data() ?? {}, doc.id);
 }
@@ -57,14 +57,14 @@ export async function updateUserAvatar(
   userId: string,
   avatarUrl: string
 ): Promise<void> {
-  await getFirestore().collection('users').doc(userId).update({ avatarUrl });
+  await getFirestore()().collection('users').doc(userId).update({ avatarUrl });
 }
 
 export function subscribeToUserProfile(
   userId: string,
   onChange: (profile: UserProfile | null) => void
 ): () => void {
-  return getFirestore()
+  return getFirestore()()
     .collection('users')
     .doc(userId)
     .onSnapshot((doc) => {

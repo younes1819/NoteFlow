@@ -25,7 +25,12 @@ export function ChecklistCard({
   const progress = total > 0 ? completed / total : 0;
 
   return (
-    <AnimatedCard index={index} onPress={onPress} onDelete={onDelete}>
+    <AnimatedCard
+      index={index}
+      onPress={onPress}
+      onDelete={onDelete}
+      accessibilityLabel={`Tarea: ${checklist.title}, ${completed} de ${total} completadas`}
+    >
       <View style={[styles.header, { backgroundColor: theme.colors.cardHeader }]}>
         <Text style={[styles.badge, { color: theme.colors.cardHeaderText }]}>
           TAREA

@@ -27,6 +27,8 @@ export function SearchHeader({
         </Text>
         <Pressable
           onPress={onAdd}
+          accessibilityRole="button"
+          accessibilityLabel={`Añadir en ${title}`}
           style={[styles.addButton, { borderColor: theme.colors.border }]}
         >
           <Ionicons name="add" size={20} color={theme.colors.foreground} />
@@ -35,6 +37,7 @@ export function SearchHeader({
       <TextInput
         value={query}
         onChangeText={onChangeQuery}
+        accessibilityLabel={`Buscar en ${title}`}
         placeholder="Buscar…"
         placeholderTextColor={theme.colors.muted}
         style={[

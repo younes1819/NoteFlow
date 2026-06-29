@@ -10,6 +10,7 @@ interface AnimatedCardProps {
   onPress?: () => void;
   onDelete?: () => void;
   index?: number;
+  accessibilityLabel?: string;
 }
 
 export function AnimatedCard({
@@ -17,12 +18,20 @@ export function AnimatedCard({
   onPress,
   onDelete,
   index = 0,
+  accessibilityLabel,
 }: AnimatedCardProps) {
   const theme = useTheme();
 
   const card = (
     <Pressable
       onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityHint={
+        onDelete
+          ? 'Pulsa para abrir. Desliza a la izquierda para eliminar.'
+          : undefined
+      }
       style={({ pressed }) => [
         styles.card,
         {

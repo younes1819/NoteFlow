@@ -17,7 +17,12 @@ export function IdeaCard({ idea, index, onPress, onDelete }: IdeaCardProps) {
   const theme = useTheme();
 
   return (
-    <AnimatedCard index={index} onPress={onPress} onDelete={onDelete}>
+    <AnimatedCard
+      index={index}
+      onPress={onPress}
+      onDelete={onDelete}
+      accessibilityLabel={`Idea: ${idea.title}`}
+    >
       <View
         style={[
           styles.colorBand,

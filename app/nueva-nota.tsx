@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -12,6 +12,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Field, inputStyle } from '@/components/ui/Field';
 import { Text } from '@/components/ui/text';
 import { IDEA_COLORS } from '@/constants/ideaColors';
 import { useTheme } from '@/constants/theme';
@@ -19,40 +20,17 @@ import { hapticSuccess } from '@/lib/haptics';
 import { getCurrentAddress, type NoteLocation } from '@/lib/location';
 import { scheduleReminder } from '@/lib/notifications';
 import {
+  getReminderDate,
+  REMINDER_OPTIONS,
+  type ReminderPreset,
+} from '@/lib/reminders';
+import {
   checklistSchema,
   ideaSchema,
   noteSchema,
 } from '@/lib/validation';
 import { useNotesStore } from '@/store/notesStore';
 import type { NoteKind } from '@/types';
-
-type ReminderPreset = 'none' | '1h' | 'tomorrow' | '3d';
-
-const REMINDER_OPTIONS: { id: ReminderPreset; label: string }[] = [
-  { id: 'none', label: 'Sin recordatorio' },
-  { id: '1h', label: 'En 1 hora' },
-  { id: 'tomorrow', label: 'Mañana 9:00' },
-  { id: '3d', label: 'En 3 días' },
-];
-
-function getReminderDate(preset: ReminderPreset): Date | null {
-  if (preset === 'none') return null;
-
-  const now = new Date();
-  if (preset === '1h') {
-    return new Date(now.getTime() + 60 * 60 * 1000);
-  }
-  if (preset === 'tomorrow') {
-    const date = new Date(now);
-    date.setDate(date.getDate() + 1);
-    date.setHours(9, 0, 0, 0);
-    return date;
-  }
-  if (preset === '3d') {
-    return new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
-  }
-  return null;
-}
 
 export default function NuevaNotaScreen() {
   const { type = 'note' } = useLocalSearchParams<{ type?: NoteKind }>();
@@ -188,13 +166,23 @@ export default function NuevaNotaScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
-          <Pressable onPress={() => router.back()}>
+          <Pressable
+            onPress={() => router.back()}
+            accessibilityRole="button"
+            accessibilityLabel="Cancelar y volver"
+          >
             <Text style={{ color: theme.colors.muted }}>Cancelar</Text>
           </Pressable>
           <Text style={[styles.heading, { color: theme.colors.foreground }]}>
             {screenTitle.toUpperCase()}
           </Text>
-          <Pressable onPress={handleSave} disabled={saving}>
+          <Pressable
+            onPress={handleSave}
+            disabled={saving}
+            accessibilityRole="button"
+            accessibilityLabel="Guardar"
+            accessibilityState={{ disabled: saving }}
+          >
             <Text style={{ color: theme.colors.accent, fontWeight: '700' }}>
               {saving ? '…' : 'Guardar'}
             </Text>
@@ -246,6 +234,8 @@ export default function NuevaNotaScreen() {
                 />
                 <Pressable
                   onPress={addChecklistItem}
+                  accessibilityRole="button"
+                  accessibilityLabel="Añadir ítem a la lista"
                   style={[styles.addItem, { borderColor: theme.colors.border }]}
                 >
                   <Text style={{ color: theme.colors.foreground }}>+</Text>
@@ -295,6 +285,9 @@ export default function NuevaNotaScreen() {
                 <Pressable
                   key={option.id}
                   onPress={() => setReminderPreset(option.id)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: reminderPreset === option.id }}
+                  accessibilityLabel={option.label}
                   style={[
                     styles.reminderChip,
                     {
@@ -329,6 +322,11 @@ export default function NuevaNotaScreen() {
             <Pressable
               onPress={() => void handleLocate()}
               disabled={locating}
+              accessibilityRole="button"
+              accessibilityLabel={
+                location ? 'Actualizar ubicación' : 'Añadir ubicación'
+              }
+              accessibilityState={{ disabled: locating }}
               style={[styles.locateBtn, { borderColor: theme.colors.border }]}
             >
               {locating ? (
@@ -357,39 +355,6 @@ export default function NuevaNotaScreen() {
   );
 }
 
-function Field({
-  label,
-  error,
-  children,
-}: {
-  label: string;
-  error?: string;
-  children: React.ReactNode;
-}) {
-  const theme = useTheme();
-  return (
-    <View style={styles.field}>
-      <Text style={[styles.label, { color: theme.colors.muted }]}>{label}</Text>
-      {children}
-      {error ? (
-        <Text style={[styles.error, { color: theme.colors.accent }]}>{error}</Text>
-      ) : null}
-    </View>
-  );
-}
-
-function inputStyle(theme: ReturnType<typeof useTheme>) {
-  return {
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    color: theme.colors.foreground,
-    backgroundColor: theme.colors.surface,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 15,
-  } as const;
-}
-
 const styles = StyleSheet.create({
   content: { paddingHorizontal: 16 },
   header: {
@@ -399,13 +364,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   heading: { fontSize: 14, fontWeight: '700', letterSpacing: 1.5 },
-  field: { marginBottom: 16 },
-  label: {
-    fontSize: 11,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-    marginBottom: 6,
-  },
   error: { fontSize: 12, marginTop: 4 },
   textArea: { minHeight: 140, textAlignVertical: 'top' },
   row: { flexDirection: 'row', gap: 8, alignItems: 'center' },

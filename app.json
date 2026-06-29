@@ -9,13 +9,17 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.noteflow.app",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "NoteFlow usa tu ubicación para asociarla a las notas que captures.",
-        "UIBackgroundModes": ["remote-notification"]
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
       }
     },
     "android": {
+      "package": "com.noteflow.app",
       "adaptiveIcon": {
         "backgroundColor": "#000000",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -46,6 +50,18 @@
         "expo-location",
         {
           "locationWhenInUsePermission": "NoteFlow usa tu ubicación para asociarla a las notas que captures."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#FFFFFF",
+          "dark": {
+            "backgroundColor": "#000000"
+          }
         }
       ]
     ]
